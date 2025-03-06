@@ -15,15 +15,15 @@
       </div>
     </div>
     <div class="content">
-      <router-view />
+      <router-view :sellerData="sellerData" />
     </div>
-    <div class="footer">I am footer</div>
+    <div class="footer"></div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
 import GlobalHeader from "../components/header/GlobalHeader";
-import { routes } from "../router/routes";
+import {routes} from "../router/routes";
 import axios from "axios";
 
 
@@ -62,7 +62,7 @@ export default {
       }
     }
   },
-  components: { GlobalHeader }
+  components: {GlobalHeader}
 };
 </script>
 

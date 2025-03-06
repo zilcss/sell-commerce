@@ -17,7 +17,7 @@
             class="icon"
             :class="classMap[sellerData.supports[0].type]"
           ></span>
-          <spam class="text">{{ sellerData.supports[0].description }}</spam>
+          <span class="text">{{ sellerData.supports[0].description }}</span>
         </div>
       </div>
       <div class="support-count" v-if="sellerData.supports" @click="showDetail">
