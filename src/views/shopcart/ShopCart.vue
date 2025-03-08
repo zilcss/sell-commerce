@@ -24,7 +24,6 @@
     <div class="ball-container">
       <transition-group
         name="drop-ball"
-        tag="false"
         @beforeEnter="beforeEnter"
         @enter="enter"
         @afterEnter="afterEnter"
@@ -163,15 +162,10 @@ export default {
           let inner = el.querySelector('.inner-hook');
           inner.style.webkitTransform = `translate3d(${x}px,0,0)`
           inner.style.transform = `translate3d(${x}px,0,0)`
-          console.log("beforeEnter", count, ball, x, y)
-          console.log(rect)
-          console.log(inner, "123")
-          console.log(el)
         }
       }
     },
     enter(el) {
-      console.log("enter")
       /* 触发重绘 */
       let rf = el.offsetHeight
       this.$nextTick(() => {
@@ -313,19 +307,22 @@ export default {
       left 32px
       bottom 22px
       z-index 200
-      transition all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
-
-    .drop-ball-enter-active,
-    .drop-ball-leave-active
-      transition: all 0.5s
-
-      /* 设置过渡的属性为transform，持续时间0.5秒，缓动函数为ease */
-
 
       .inner
+        z-index 200
         width 16px
         height 16px
         border-radius 50%
         background rgb(0, 160, 220)
         transition all 0.4s
+
+    .drop-ball-enter-active
+      transition all 1s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+
+    .drop-ball-enter
+      opacity 0
+
+    .drop-ball-enter-to
+      opacity 1
+      transform translate3d(0, 0, 0) !important
 </style>
