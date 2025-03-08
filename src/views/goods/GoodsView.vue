@@ -54,7 +54,8 @@
                 <div class="cartControl-wrapper">
                   <CartControl
                     :food="food"
-                    @foodCountUpdata="handleFoodCountUpdated"
+                    @addCart="handleAddCart"
+                    @decreaseCart="handleDecreaseCart"
                   ></CartControl>
                 </div>
               </div>
@@ -66,6 +67,9 @@
     <ShopCart
       :delivery-price="sellerData.deliveryPrice"
       :min-price="sellerData.minPrice"
+      :position="position"
+      :foods="foods"
+      ref="ShopCart"
     ></ShopCart>
   </div>
 </template>
@@ -79,11 +83,15 @@ import CartControl from "../cartconcontrol/CartControl";
 export default {
   data() {
     return {
+      pos: {},
+      position: [],
+      foods: [],
       goodsData: {},
       isLoading: false,
       listHeight: [],
       scrollY: 0,
-      height: 0
+      height: 0,
+
     };
   },
   props: {
@@ -112,7 +120,7 @@ export default {
         }
       }
       return 0;
-    }
+    },
   },
   methods: {
     async fetchGoodsData() {
@@ -151,7 +159,9 @@ export default {
         this.height += item.clientHeight;
         this.listHeight.push(this.height);
       });
-    }, isActive(index, event) {
+    }
+
+    , isActive(index, event) {
       if (!event._constructed) {
         return
       }
@@ -159,15 +169,29 @@ export default {
       let el = foodListItems[index];
       this.foodsScroll.scrollToElement(el, 300);
     },
-    handleFoodCountUpdated(updatatedFood) {
-      this.food = updatatedFood
+    handleAddCart(updatedFood, target) {
+      this.food = updatedFood
+      if (this.food.count === 1) {
+        this.foods.push(this.food)
+        this.$refs.ShopCart.drop(target);
+
+        console.log(this.foods, "123")
+      }
+    },
+    handleDecreaseCart() {
+      if (this.food.count < 1) {
+        this.foods.pop(this.food)
+      }
     }
+    ,
   },
   components: {
     CartControl,
     ShopCart
   }
+
 }
+
 ;
 </script>
 

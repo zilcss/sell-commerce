@@ -20,21 +20,48 @@
         <div class="pay" :class="payClass">{{ payDesc }}</div>
       </div>
     </div>
+
+    <div class="ball-container">
+      <transition-group
+        name="drop-ball"
+        tag="false"
+        @beforeEnter="beforeEnter"
+        @enter="enter"
+        @afterEnter="afterEnter"
+      >
+        <div
+          class="ball"
+          v-for="(ball, index) in balls"
+          :key="index"
+          v-show="ball.show"
+        >
+          <div class="inner inner-hook"></div>
+        </div>
+      </transition-group>
+    </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
 export default {
   props: {
-    selectFoods: {
+    showData: {
       type: Array,
       default() {
-        return [
-          {
-            price: 30,
-            count: 1
-          }
-        ]
+        return []
+      }
+    },
+
+    position: {
+      type: Array,
+      default() {
+        return []
+      }
+    },
+    foods: {
+      type: Array,
+      default() {
+        return []
       }
 
     },
@@ -46,12 +73,36 @@ export default {
       type: Number,
       default: 0
     }
+  },
+  data() {
+    return {
+      balls: [
+        {
+          show: false
+        },
+        {
+          show: false
+        },
+        {
+          show: false
+        },
+        {
+          show: false
+        },
+        {
+          show: false
+        }
+      ],
+      dropBalls: []
+    }
   }
+
+
   ,
   computed: {
     totalPrice() {
       let total = 0
-      this.selectFoods.forEach((food) => {
+      this.foods.forEach((food) => {
         total += food.price * food.count
       })
       return total
@@ -59,7 +110,7 @@ export default {
     ,
     totalCount() {
       let count = 0
-      this.selectFoods.forEach((food) => {
+      this.foods.forEach((food) => {
         count += food.count
       })
       return count
@@ -83,7 +134,69 @@ export default {
     }
 
 
+  },
+  methods: {
+    drop(el) {
+      for (let i = 0; i < this.balls.length; i++) {
+        let ball = this.balls[i]
+        if (!ball.show) {
+          ball.show = true
+          ball.el = el
+          this.dropBalls.push(ball)
+          return
+        }
+      }
+    },
+    beforeEnter(el) {
+
+      let count = this.balls.length
+      while (count--) {
+        let ball = this.balls[count]
+        if (ball.show) {
+
+          let rect = ball.el.getBoundingClientRect()
+          let x = rect.left - 32
+          let y = -(window.innerHeight - rect.top - 22)
+          el.style.display = ''
+          el.style.webkitTransform = `translate3d(0,${y}px,0)`
+          el.style.transform = `translate3d(0,${y}px,0)`
+          let inner = el.querySelector('.inner-hook');
+          inner.style.webkitTransform = `translate3d(${x}px,0,0)`
+          inner.style.transform = `translate3d(${x}px,0,0)`
+          console.log("beforeEnter", count, ball, x, y)
+          console.log(rect)
+          console.log(inner, "123")
+          console.log(el)
+        }
+      }
+    },
+    enter(el) {
+      console.log("enter")
+      /* 触发重绘 */
+      let rf = el.offsetHeight
+      this.$nextTick(() => {
+        el.style.webkitTransform = 'translate3d(0,0,0)'
+        el.style.transform = 'translate3d(0,0,0)'
+        let inner = el.getElementsByClassName('inner-hook')[0]
+        inner.style.webkitTransform = 'translate3d(0,0,0)'
+        inner.style.transform = 'translate3d(0,0,0)'
+      })
+    },
+    afterEnter(el) {
+      console.log("afterEnter")
+      let ball = this.dropBalls.shift()
+      if (ball) {
+        ball.show = false
+        el.style.display = 'none'
+      }
+    }
+
+
+  },
+  mounted() {
+    this.$emit('showData', this.showData);
   }
+
 }
 </script>
 
@@ -152,45 +265,67 @@ export default {
           background rgb(240, 20, 20)
           box-shadow 0 4px 8px 0 rgba(0, 0, 0, 0.4)
 
-  .price
-    display inline-block
-    vertical-align top
-    margin-top 12px
-    line-height 24px
-    padding-right 12px
-    box-sizing border-box
-    border-right 1px solid rgba(255, 255, 255, 0.1)
-    color #80858a
-    font-size 16px
-    font-weight 700
+      .price
+        display inline-block
+        vertical-align top
+        margin-top 12px
+        line-height 24px
+        padding-right 12px
+        box-sizing border-box
+        border-right 1px solid rgba(255, 255, 255, 0.1)
+        color #80858a
+        font-size 16px
+        font-weight 700
 
-    &.highlight
-      color #fff
+        &.highlight
+          color #fff
 
-  .desc
-    display inline-block
-    vertical-align top
-    margin 12px 0 0 12px
-    line-height 24px
-    font-size 10px
-
-
-.cart-right
-  flex 0 0 105px
-  width 105px
-
-  .pay
-    height 48px
-    line-height 48px
-    text-align center
-    font-size 12px
-    font-weight 700
-
-    &.ont-enough
-      background #2b333b
+      .desc
+        display inline-block
+        vertical-align top
+        margin 12px 0 0 12px
+        line-height 24px
+        font-size 10px
 
 
-    &.enough
-      background #00b43c
-      color #fff
+    .cart-right
+      flex 0 0 105px
+      width 105px
+
+      .pay
+        height 48px
+        line-height 48px
+        text-align center
+        font-size 12px
+        font-weight 700
+
+        &.ont-enough
+          background #2b333b
+
+
+        &.enough
+          background #00b43c
+          color #fff
+
+  .ball-container
+    .ball
+      position fixed
+      left 32px
+      bottom 22px
+      z-index 200
+      transition all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+
+    .drop-ball-enter-active,
+    .drop-ball-leave-active
+      transition: all 0.5s
+
+      /* 设置过渡的属性为transform，持续时间0.5秒，缓动函数为ease */
+
+
+      .inner
+        width 16px
+        height 16px
+        border-radius 50%
+        background rgb(0, 160, 220)
+        transition all 0.4s
 </style>

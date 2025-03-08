@@ -20,7 +20,6 @@
 
 export default {
 
-
   props: {
     food: {
       type: Object
@@ -38,15 +37,13 @@ export default {
   },
   methods: {
     addCart() {
-      console.log("22c")
+      console.log("click2")
       this.localFood.count++;
-      this.$emit('addCart', this.localFood)
-      const element = this.$refs.cartDecrease;
 
 
+      this.$emit('addCart', this.localFood, event.target)
     },
     decreaseCart() {
-      const element = this.$refs.cartDecrease;
       if (this.localFood.count >= 1) {
         this.localFood.count--;
         this.$emit('decreaseCart', this.localFood);
