@@ -69,6 +69,8 @@
       :min-price="sellerData.minPrice"
       :position="position"
       :foods="foods"
+      @addCart="handleAddCart"
+      @decreaseCart="handleDecreaseCart"
       ref="ShopCart"
     ></ShopCart>
   </div>
@@ -123,6 +125,7 @@ export default {
     },
   },
   methods: {
+
     async fetchGoodsData() {
       this.isLoading = true;
       try {
@@ -131,6 +134,7 @@ export default {
         this.goodsData = response.data;
         console.log(this.goodsData);
         this.$nextTick(() => {
+          console.log("112")
           this._initScroll();
           this._calculateHeights();
         })
@@ -141,18 +145,22 @@ export default {
       }
     },
     _initScroll() {
+
       this.menunScroll = new BScroll(this.$refs['menu-wrapper'], {
         click: true
       });
+      console.log("111")
       this.foodsScroll = new BScroll(this.$refs['foods-wrapper'], {
         probeType: 3,
         click: true
       });
+
       this.foodsScroll.on('scroll', (pos) => {
         this.scrollY = Math.abs(Math.round(pos.y))
       });
     },
     _calculateHeights() {
+      console.log("121")
       const foodListItems = this.$refs['foodsListItem'];
       this.listHeight.push(this.height);
       foodListItems.forEach((item) => {
@@ -160,7 +168,6 @@ export default {
         this.listHeight.push(this.height);
       });
     }
-
     , isActive(index, event) {
       if (!event._constructed) {
         return
@@ -171,19 +178,41 @@ export default {
     },
     handleAddCart(updatedFood, target) {
       this.food = updatedFood
-      if (this.food.count === 1) {
-        this.foods.push(this.food)
+      // 1. 更新商品列表中的数量
+
+      if (!this.food.count) {
+        let add = 1
+        // 2. 同步到购物车
+        this.syncToCart(this.food, add)
+      }
+
+      this.food.count = (this.food.count || 0) + 1
+      if (target) {
         this.$refs.ShopCart.drop(target);
 
         console.log(this.foods, "123")
       }
     },
     handleDecreaseCart() {
-      if (this.food.count < 1) {
-        this.foods.pop(this.food)
+      // 1. 更新商品列表中的数量
+      if (this.food.count > 1) {
+        this.food.count--
+      } else {
+        let decr = 0
+        // 2. 同步到购物车
+        this.syncToCart(this.food, decr)
       }
-    }
-    ,
+
+    },
+    syncToCart(food, X) {
+      // 1. 同步商品列表数据
+      if (X === 1) {
+        this.foods.push(food)
+      } else {
+        this.foods.pop(food)
+      }
+
+    },
   },
   components: {
     CartControl,

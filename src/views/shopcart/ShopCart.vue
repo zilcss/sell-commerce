@@ -1,6 +1,6 @@
 <template>
   <div class="cart-container">
-    <div class="content">
+    <div class="content" @click="showFold">
       <div class="cart-left">
         <div class="logo-wrapper">
           <div class="logo" :class="{ highlight: totalCount > 0 }">
@@ -38,10 +38,44 @@
         </div>
       </transition-group>
     </div>
+
+    <transition name="fold">
+      <div class="shopping-cart-container" v-show="fold">
+        <!-- 头部 -->
+        <div class="shopping-cart-header">
+          <div class="shopping-cart-title">购物车</div>
+          <div class="shopping-cart-clear">清空</div>
+        </div>
+        <!-- 底部已添加商品部分 -->
+        <div class="list-wrapper" ref="listWrapper">
+          <ul>
+            <li
+              class="added-products-container"
+              v-for="(food, index) in foods"
+              :key="index.id || index"
+            >
+              <div class="added-products-left">
+                {{ food.name }}
+              </div>
+              <div class="added-products-right">¥{{ food.price }}</div>
+              <CartControl
+                class="cart-control-component"
+                :food="food"
+                @addCart="handleAddCart"
+                @decreaseCart="handleDecreaseCart"
+              ></CartControl>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+import CartControl from "../cartconcontrol/CartControl";
+import BScroll from "@better-scroll/core";
+
 export default {
   props: {
     showData: {
@@ -50,7 +84,6 @@ export default {
         return []
       }
     },
-
     position: {
       type: Array,
       default() {
@@ -59,6 +92,7 @@ export default {
     },
     foods: {
       type: Array,
+      required: true,
       default() {
         return []
       }
@@ -92,13 +126,15 @@ export default {
           show: false
         }
       ],
-      dropBalls: []
+      dropBalls: [],
+      fold: false,
     }
   }
 
 
   ,
   computed: {
+
     totalPrice() {
       let total = 0
       this.foods.forEach((food) => {
@@ -132,9 +168,41 @@ export default {
       return "not-enough"
     }
 
-
   },
   methods: {
+    handleAddCart(food) {
+      food.count = (food.count || 0) + 1;
+      this.$emit('addCart', food);
+    },
+    handleDecreaseCart(food) {
+      if (food.count > 0) {
+        food.count--;
+        this.$emit('decreaseCart', food);
+      }
+    },
+    showFold() {
+      if (!this.totalCount) {
+        return;
+      }
+      this.fold = !this.fold
+      // 优化初始化逻辑
+      if (this.fold) {
+        this.$nextTick(() => {
+          // 确保DOM已更新
+          if (!this.scroll) {
+            this.scroll = new BScroll(this.$refs['listWrapper'], {
+              click: true,
+
+            })
+
+          } else {
+            this.scroll.refresh()
+          }
+        })
+      }
+    },
+
+
     drop(el) {
       for (let i = 0; i < this.balls.length; i++) {
         let ball = this.balls[i]
@@ -157,11 +225,13 @@ export default {
           let x = rect.left - 32
           let y = -(window.innerHeight - rect.top - 22)
           el.style.display = ''
-          el.style.webkitTransform = `translate3d(0,${y}px,0)`
-          el.style.transform = `translate3d(0,${y}px,0)`
-          let inner = el.querySelector('.inner-hook');
-          inner.style.webkitTransform = `translate3d(${x}px,0,0)`
-          inner.style.transform = `translate3d(${x}px,0,0)`
+
+
+          el.style.display = ''
+          el.style.transform = `translate3d(${x}px,${y}px,0)`
+
+          let inner = el.querySelector('.inner-hook')
+          inner.style.transform = `translate3d(0,0,0)`
         }
       }
     },
@@ -169,10 +239,8 @@ export default {
       /* 触发重绘 */
       let rf = el.offsetHeight
       this.$nextTick(() => {
-        el.style.webkitTransform = 'translate3d(0,0,0)'
         el.style.transform = 'translate3d(0,0,0)'
-        let inner = el.getElementsByClassName('inner-hook')[0]
-        inner.style.webkitTransform = 'translate3d(0,0,0)'
+        let inner = el.querySelector('.inner-hook')
         inner.style.transform = 'translate3d(0,0,0)'
       })
     },
@@ -183,12 +251,10 @@ export default {
         ball.show = false
         el.style.display = 'none'
       }
-    }
-
-
+    },
   },
-  mounted() {
-    this.$emit('showData', this.showData);
+  components: {
+    CartControl
   }
 
 }
@@ -306,23 +372,98 @@ export default {
       position fixed
       left 32px
       bottom 22px
-      z-index 200
+      z-index 20
 
       .inner
-        z-index 200
         width 16px
         height 16px
         border-radius 50%
         background rgb(0, 160, 220)
-        transition all 0.4s
+        transform-origin center bottom
+
 
     .drop-ball-enter-active
-      transition all 1s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+      transition all 1s cubic-bezier(.27, .84, .64, .94)
+
+      .inner
+        transition all 0.6s linear
 
     .drop-ball-enter
-      opacity 0
+      opacity 1
 
     .drop-ball-enter-to
       opacity 1
       transform translate3d(0, 0, 0) !important
+
+  .shopping-cart-container
+    position fixed
+    left 0
+    bottom 48px
+    width 100%
+    z-index -1
+    background #f3f5f7
+
+
+    .shopping-cart-header
+      height 40px
+      line-height 40px
+      padding 0 30px
+      background #dbe2e7
+      font-size 14px
+      font-weight 200
+      border-bottom 1px solid rgba(7, 17, 27, 0.1)
+
+      .shopping-cart-title
+        float left
+        color rgb(7, 17, 27)
+
+      .shopping-cart-clear
+        float right
+        color rgb(0, 160, 220)
+
+    .list-wrapper
+      z-index -2
+      max-height 266px
+      overflow hidden
+
+      .added-products-container
+        position relative
+        margin 0 20px
+        padding 0 10px
+        height 48px
+        line-height 48px
+        border-bottom 1px solid rgba(7, 17, 27, 0.1)
+
+        .added-products-left
+          font-size 14px
+          color rgb(7, 17, 27)
+
+        .added-products-right
+          position absolute
+          right 85px
+          bottom 0
+          font-size 18px
+          font-weight 700
+          color rgb(240, 20, 20)
+
+        .cart-control-component
+          position absolute
+          right -4px
+          bottom -5px
+
+  .fold-enter-active,
+  .fold-leave-active
+    transition: transform 0.5s ease, opacity 0.5s ease;
+
+  .fold-enter-to
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+
+  .fold-leave-to
+    transform: translate3d(0, 100%, 0);
+
+  .fold-enter, .fade-leave
+    transform: translate3d(0, 100%, 0);
+
+    opacity: 0;
 </style>

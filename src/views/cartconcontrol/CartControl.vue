@@ -3,12 +3,12 @@
     <transition name="fade">
       <div
         class="cart-decrease icon-remove_circle_outline"
-        v-if="localFood.count > 0"
+        v-if="count > 0"
         @click="decreaseCart"
       ></div>
     </transition>
-    <div class="cart-count" v-show="localFood.count > 0">
-      {{ localFood.count }}
+    <div class="cart-count" v-show="count > 0">
+      {{ count }}
     </div>
 
     <div class="cart-add icon-add_circle" @click="addCart"></div>
@@ -16,40 +16,33 @@
 </template>
 
 <script type="text/ecmascript-6">
-
-
 export default {
-
   props: {
     food: {
-      type: Object
+      type: Object,
+      required: true
     }
   },
-  data() {
-
-    return {
-      localFood: {
-        ...this.food,
-        count: this.food.count || 0
+  computed: {
+    count: {
+      get() {
+        return this.food.count || 0;
+      },
+      set(value) {
+        this.$emit('update:food', { ...this.food, count: value });
       }
-
     }
   },
   methods: {
     addCart() {
-      console.log("click2")
-      this.localFood.count++;
-
-
-      this.$emit('addCart', this.localFood, event.target)
+      this.count++;
+      this.$emit('addCart', this.food, event.target);
     },
     decreaseCart() {
-      if (this.localFood.count >= 1) {
-        this.localFood.count--;
-        this.$emit('decreaseCart', this.localFood);
+      if (this.count > 0) {
+        this.count--;
+        this.$emit('decreaseCart', this.food);
       }
-
-
     }
   }
 }
