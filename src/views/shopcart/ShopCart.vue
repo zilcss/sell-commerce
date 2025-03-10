@@ -51,19 +51,21 @@
           <ul>
             <li
               class="added-products-container"
-              v-for="(food, index) in foods"
+              v-for="(food, index) in cartFoods"
               :key="index.id || index"
             >
               <div class="added-products-left">
                 {{ food.name }}
               </div>
-              <div class="added-products-right">¥{{ food.price }}</div>
+              <div class="added-products-right">
+                ¥{{ food.price * food.count }}
+              </div>
               <CartControl
                 class="cart-control-component"
                 :food="food"
-                @addCart="handleAddCart"
-                @decreaseCart="handleDecreaseCart"
-              ></CartControl>
+                :count="food.count"
+              >
+              </CartControl>
             </li>
           </ul>
         </div>
@@ -73,8 +75,10 @@
 </template>
 
 <script type="text/ecmascript-6">
-import CartControl from "../cartconcontrol/CartControl";
 import BScroll from "@better-scroll/core";
+
+import {mapState} from 'vuex'
+import CartControl from "../cartconcontrol/CartControl"
 
 export default {
   props: {
@@ -84,20 +88,7 @@ export default {
         return []
       }
     },
-    position: {
-      type: Array,
-      default() {
-        return []
-      }
-    },
-    foods: {
-      type: Array,
-      required: true,
-      default() {
-        return []
-      }
 
-    },
     deliveryPrice: {
       type: Number,
       default: 0
@@ -127,6 +118,7 @@ export default {
         }
       ],
       dropBalls: [],
+      cartShowFoods: [],
       fold: false,
     }
   }
@@ -134,10 +126,12 @@ export default {
 
   ,
   computed: {
-
+    ...mapState(['cartFoods']),
     totalPrice() {
+
       let total = 0
-      this.foods.forEach((food) => {
+      this.cartFoods.forEach((food) => {
+
         total += food.price * food.count
       })
       return total
@@ -145,7 +139,7 @@ export default {
     ,
     totalCount() {
       let count = 0
-      this.foods.forEach((food) => {
+      this.cartFoods.forEach((food) => {
         count += food.count
       })
       return count
@@ -170,16 +164,6 @@ export default {
 
   },
   methods: {
-    handleAddCart(food) {
-      food.count = (food.count || 0) + 1;
-      this.$emit('addCart', food);
-    },
-    handleDecreaseCart(food) {
-      if (food.count > 0) {
-        food.count--;
-        this.$emit('decreaseCart', food);
-      }
-    },
     showFold() {
       if (!this.totalCount) {
         return;

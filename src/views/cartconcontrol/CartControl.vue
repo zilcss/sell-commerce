@@ -3,51 +3,94 @@
     <transition name="fade">
       <div
         class="cart-decrease icon-remove_circle_outline"
-        v-if="count > 0"
-        @click="decreaseCart"
+        v-show="localFood.count > 0"
+        @click="handleDecrease"
       ></div>
     </transition>
-    <div class="cart-count" v-show="count > 0">
-      {{ count }}
+    <div class="cart-count" v-show="localFood.count > 0">
+      {{ localFood.count }}
     </div>
 
-    <div class="cart-add icon-add_circle" @click="addCart"></div>
+    <div class="cart-add icon-add_circle" @click="handleAdd"></div>
   </div>
 </template>
+<script>
+import { nanoid } from "nanoid";
+import { mapState } from "vuex";
 
-<script type="text/ecmascript-6">
 export default {
   props: {
     food: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
-  computed: {
-    count: {
-      get() {
-        return this.food.count || 0;
+  data() {
+    return {
+      localFood: {
+        id: this.food.id || nanoid(),
+        name: this.food.name,
+        price: this.food.price,
+        count: this.count || 0,
       },
-      set(value) {
-        this.$emit('update:food', { ...this.food, count: value });
-      }
-    }
+      isClicking: false,
+    };
+  },
+  watch: {
+    localFood: {
+      handler(newLocalFood) {
+        const newCartFoods = this.$store.state.cartFoods.map((f) =>
+          f.id === newLocalFood.id ? newLocalFood : f
+        );
+        this.$store.commit("SET_CART_FOODS", newCartFoods);
+      },
+      deep: true,
+    },
   },
   methods: {
-    addCart() {
-      this.count++;
-      this.$emit('addCart', this.food, event.target);
-    },
-    decreaseCart() {
-      if (this.count > 0) {
-        this.count--;
-        this.$emit('decreaseCart', this.food);
-      }
-    }
-  }
-}
-</script>
+    ...mapState(["cartFoods"]),
 
+    handleAdd() {
+      console.log(this.count, "000");
+      if (this.isClicking) return;
+      this.isClicking = true;
+      this.localFood.count++;
+
+      // 检查是否已存在于购物车
+      const existIndex = this.$store.state.cartFoods.findIndex(
+        (f) => f.id === this.localFood.id,
+
+        console.log(this.localFood.count, "text")
+      );
+      if (existIndex === -1) {
+        this.$store.commit("SET_CART_FOODS", [
+          ...this.$store.state.cartFoods,
+          this.localFood,
+        ]);
+      }
+
+      setTimeout(() => (this.isClicking = false), 300);
+    },
+    handleDecrease() {
+      if (this.isClicking) return;
+      this.isClicking = true;
+
+      if (this.localFood.count > 0) {
+        this.localFood.count--;
+      }
+
+      if (this.localFood.count === 0) {
+        this.$store.commit(
+          "SET_CART_FOODS",
+          this.$store.state.cartFoods.filter((f) => f.id !== this.localFood.id)
+        );
+      }
+
+      setTimeout(() => (this.isClicking = false), 300);
+    },
+  },
+};
+</script>
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .cartControl
   .cart-decrease, .cart-add

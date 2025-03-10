@@ -55,7 +55,6 @@
                   <CartControl
                     :food="food"
                     @addCart="handleAddCart"
-                    @decreaseCart="handleDecreaseCart"
                   ></CartControl>
                 </div>
               </div>
@@ -67,16 +66,14 @@
     <ShopCart
       :delivery-price="sellerData.deliveryPrice"
       :min-price="sellerData.minPrice"
-      :position="position"
       :foods="foods"
-      @addCart="handleAddCart"
-      @decreaseCart="handleDecreaseCart"
       ref="ShopCart"
     ></ShopCart>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+import {mapState} from 'vuex'
 import BScroll from '@better-scroll/core'
 import axios from "axios";
 import ShopCart from "../shopcart/ShopCart";
@@ -86,9 +83,7 @@ export default {
   data() {
     return {
       pos: {},
-      position: [],
       foods: [],
-      goodsData: {},
       isLoading: false,
       listHeight: [],
       scrollY: 0,
@@ -103,15 +98,17 @@ export default {
   }
   ,
   created() {
-    this.fetchGoodsData();
     this.classMap = ["decrease", "discount", "special", "invoice", "guarantee"];
     this._initScroll();
+    this.$store.dispatch('fetchGoodsData')
   },
   mounted() {
     this.height = 0;
 
   },
   computed: {
+
+    ...mapState(['goodsData']),
     currentIndex() {
       for (let i = 0; i < this.listHeight.length; i++) {
         let height1 = this.listHeight[i];
@@ -124,31 +121,21 @@ export default {
       return 0;
     },
   },
-  methods: {
-
-    async fetchGoodsData() {
-      this.isLoading = true;
-      try {
-        const response = await axios.get("http://localhost:3000/goods");
-
-        this.goodsData = response.data;
-        console.log(this.goodsData);
+  watch: {
+    goodsData: {
+      handler() {
         this.$nextTick(() => {
-          console.log("112")
           this._initScroll();
           this._calculateHeights();
         })
-      } catch (error) {
-        console.error("获取数据失败", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    _initScroll() {
+      },
+      immediate: true
+    }
+  },
+  methods: {
 
-      this.menunScroll = new BScroll(this.$refs['menu-wrapper'], {
-        click: true
-      });
+    _initScroll() {
+      this.menunScroll = new BScroll(this.$refs['menu-wrapper'], {});
       console.log("111")
       this.foodsScroll = new BScroll(this.$refs['foods-wrapper'], {
         probeType: 3,
@@ -160,13 +147,18 @@ export default {
       });
     },
     _calculateHeights() {
-      console.log("121")
+      // 添加非空判断
+      if (!this.$refs['foodsListItems']) {
+        console.log('未获取到 foodsListItems 的 ref');
+        return;
+      }
       const foodListItems = this.$refs['foodsListItem'];
       this.listHeight.push(this.height);
       foodListItems.forEach((item) => {
         this.height += item.clientHeight;
         this.listHeight.push(this.height);
       });
+      console.log("121")
     }
     , isActive(index, event) {
       if (!event._constructed) {
@@ -176,43 +168,13 @@ export default {
       let el = foodListItems[index];
       this.foodsScroll.scrollToElement(el, 300);
     },
-    handleAddCart(updatedFood, target) {
-      this.food = updatedFood
-      // 1. 更新商品列表中的数量
-
-      if (!this.food.count) {
-        let add = 1
-        // 2. 同步到购物车
-        this.syncToCart(this.food, add)
-      }
-
-      this.food.count = (this.food.count || 0) + 1
+    handleAddCart(target) {
       if (target) {
+        console.log("123111")
         this.$refs.ShopCart.drop(target);
-
-        console.log(this.foods, "123")
       }
     },
-    handleDecreaseCart() {
-      // 1. 更新商品列表中的数量
-      if (this.food.count > 1) {
-        this.food.count--
-      } else {
-        let decr = 0
-        // 2. 同步到购物车
-        this.syncToCart(this.food, decr)
-      }
 
-    },
-    syncToCart(food, X) {
-      // 1. 同步商品列表数据
-      if (X === 1) {
-        this.foods.push(food)
-      } else {
-        this.foods.pop(food)
-      }
-
-    },
   },
   components: {
     CartControl,
