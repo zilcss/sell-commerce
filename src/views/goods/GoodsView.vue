@@ -52,10 +52,7 @@
                   >
                 </div>
                 <div class="cartControl-wrapper">
-                  <CartControl
-                    :food="food"
-                    @addCart="handleAddCart"
-                  ></CartControl>
+                  <CartControl :food="food" @dropAct="dropCar"></CartControl>
                 </div>
               </div>
             </li>
@@ -168,7 +165,7 @@ export default {
       let el = foodListItems[index];
       this.foodsScroll.scrollToElement(el, 300);
     },
-    handleAddCart(target) {
+    dropCar(target) {
       if (target) {
         console.log("123111")
         this.$refs.ShopCart.drop(target);

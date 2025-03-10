@@ -1,75 +1,78 @@
 <template>
-  <div class="cart-container">
-    <div class="content" @click="showFold">
-      <div class="cart-left">
-        <div class="logo-wrapper">
-          <div class="logo" :class="{ highlight: totalCount > 0 }">
-            <div
-              class="icon-shopping_cart"
-              :class="{ highlight: totalCount > 0 }"
-            ></div>
+  <div>
+    <div class="cart-container">
+      <div class="content" @click="showFold">
+        <div class="cart-left">
+          <div class="logo-wrapper">
+            <div class="logo" :class="{ highlight: totalCount > 0 }">
+              <div
+                class="icon-shopping_cart"
+                :class="{ highlight: totalCount > 0 }"
+              ></div>
+            </div>
+            <div class="num" v-show="totalCount > 0">{{ totalCount }}</div>
           </div>
-          <div class="num" v-show="totalCount > 0">{{ totalCount }}</div>
+          <div class="price" :class="{ highlight: totalPrice > 0 }">
+            ¥{{ totalPrice }}
+          </div>
+          <div class="desc">另需配送费¥{{ deliveryPrice }}元</div>
         </div>
-        <div class="price" :class="{ highlight: totalPrice > 0 }">
-          ¥{{ totalPrice }}
+        <div class="cart-right">
+          <div class="pay" :class="payClass" @click.stop.prevent="payPrice">
+            {{ payDesc }}
+          </div>
         </div>
-        <div class="desc">另需配送费¥{{ deliveryPrice }}元</div>
       </div>
-      <div class="cart-right">
-        <div class="pay" :class="payClass">{{ payDesc }}</div>
-      </div>
-    </div>
 
-    <div class="ball-container">
-      <transition-group
-        name="drop-ball"
-        @beforeEnter="beforeEnter"
-        @enter="enter"
-        @afterEnter="afterEnter"
-      >
-        <div
-          class="ball"
-          v-for="(ball, index) in balls"
-          :key="index"
-          v-show="ball.show"
+      <div class="ball-container">
+        <transition-group
+          name="drop-ball"
+          @beforeEnter="beforeEnter"
+          @enter="enter"
+          @afterEnter="afterEnter"
         >
-          <div class="inner inner-hook"></div>
-        </div>
-      </transition-group>
-    </div>
-
-    <transition name="fold">
-      <div class="shopping-cart-container" v-show="fold">
-        <!-- 头部 -->
-        <div class="shopping-cart-header">
-          <div class="shopping-cart-title">购物车</div>
-          <div class="shopping-cart-clear">清空</div>
-        </div>
-        <!-- 底部已添加商品部分 -->
-        <div class="list-wrapper" ref="listWrapper">
-          <ul>
-            <li
-              class="added-products-container"
-              v-for="(food, index) in cartFoods"
-              :key="index.id || index"
-            >
-              <div class="added-products-left">
-                {{ food.name }}
-              </div>
-              <div class="added-products-right">
-                ¥{{ food.price * food.count }}
-              </div>
-              <CartControl
-                class="cart-control-component"
-                :food="food"
-                :count="food.count"
-              >
-              </CartControl>
-            </li>
-          </ul>
-        </div>
+          <div
+            class="ball"
+            v-for="(ball, index) in balls"
+            :key="index"
+            v-show="ball.show"
+          >
+            <div class="inner inner-hook"></div>
+          </div>
+        </transition-group>
       </div>
+
+      <transition name="fold">
+        <div class="shopping-cart-container" v-show="showCart">
+          <!-- 头部 -->
+          <div class="shopping-cart-header">
+            <div class="shopping-cart-title">购物车</div>
+            <div class="shopping-cart-clear" @click="emptyCart">清空</div>
+          </div>
+          <!-- 底部已添加商品部分 -->
+          <div class="list-wrapper" ref="listWrapper">
+            <ul>
+              <li
+                class="added-products-container"
+                v-for="(food, index) in cartFoods"
+                :key="index.id || index"
+              >
+                <div class="added-products-left">
+                  {{ food.name }}
+                </div>
+                <div class="added-products-right">
+                  ¥{{ food.price * food.count }}
+                </div>
+                <div class="cart-context">{{ food.count }}个</div>
+                <div class="cart-button" @click="popFood(food)">删除</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </transition>
+    </div>
+    <transition name="blackView">
+      <div class="blackView" v-show="showCart" @click="OpenView"></div>
     </transition>
   </div>
 </template>
@@ -127,6 +130,13 @@ export default {
   ,
   computed: {
     ...mapState(['cartFoods']),
+    /**
+     * 控制购物车展示逻辑
+     * @returns {boolean} 是否显示购物车
+     */
+    showCart() {
+      return this.totalCount > 0 && this.fold
+    },
     totalPrice() {
 
       let total = 0
@@ -164,6 +174,27 @@ export default {
 
   },
   methods: {
+    OpenView() {
+      this.fold = !this.fold
+    },
+    emptyCart() {
+      this.$store.commit('SET_CART_FOODS', [])
+      this.fold = false
+    },
+    popFood(food) {
+      this.$store.commit(
+          "SET_CART_FOODS",
+          this.$store.state.cartFoods.filter((f) => f.id !== food.id)
+      );
+      if (this.totalCount === 0) {
+        this.fold = false
+      }
+    },
+    payPrice() {
+      if (this.totalPrice < this.minPrice) return
+      alert("支付" + this.totalPrice + "元")
+      this.$store.commit('SET_CART_FOODS', [])
+    },
     showFold() {
       if (!this.totalCount) {
         return;
@@ -237,9 +268,7 @@ export default {
       }
     },
   },
-  components: {
-    CartControl
-  }
+  components: {}
 
 }
 </script>
@@ -430,10 +459,20 @@ export default {
           font-weight 700
           color rgb(240, 20, 20)
 
-        .cart-control-component
+        .cart-context
           position absolute
-          right -4px
-          bottom -5px
+          right 130px
+          bottom 0
+          font-size 14px
+          color #4f5556
+
+        .cart-button
+          position absolute
+          right 10px
+          bottom 0
+          color rgb(240, 20, 20)
+          font-size 14px
+
 
   .fold-enter-active,
   .fold-leave-active
@@ -450,4 +489,27 @@ export default {
     transform: translate3d(0, 100%, 0);
 
     opacity: 0;
+
+.blackView
+  position fixed
+  top 0
+  left 0
+  width 100%
+  height 100%
+  z-index 40
+  background rgba(7, 17, 27, 0.6)
+  backdrop-filter blur(10px)
+
+.blackView-leave-active,
+.blackView-enter-active
+  transition opacity 0.5s ease;
+
+
+.blackView-enter,
+.blackView-leave-to
+  opacity 0;
+
+.blackView-enter-to
+.blackView-leave
+  opacity 1;
 </style>

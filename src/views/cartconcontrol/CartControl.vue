@@ -36,6 +36,18 @@ export default {
       isClicking: false,
     };
   },
+  computed: {
+    /**
+     * 监听购物车数据变化
+     * @returns {number} 当前商品在购物车中的数量
+     */
+    cartFoodCount() {
+      const cartFood = this.$store.state.cartFoods.find(
+        (f) => f.id === this.localFood.id
+      );
+      return cartFood ? cartFood.count : 0;
+    },
+  },
   watch: {
     localFood: {
       handler(newLocalFood) {
@@ -46,21 +58,28 @@ export default {
       },
       deep: true,
     },
+    /**
+     * 监听购物车中商品数量变化
+     * @param {number} newCount - 新的商品数量
+     */
+    cartFoodCount: {
+      handler(newCount) {
+        this.localFood.count = newCount;
+      },
+      immediate: true,
+    },
   },
   methods: {
     ...mapState(["cartFoods"]),
 
-    handleAdd() {
-      console.log(this.count, "000");
+    handleAdd(event) {
       if (this.isClicking) return;
       this.isClicking = true;
       this.localFood.count++;
 
       // 检查是否已存在于购物车
       const existIndex = this.$store.state.cartFoods.findIndex(
-        (f) => f.id === this.localFood.id,
-
-        console.log(this.localFood.count, "text")
+        (f) => f.id === this.localFood.id
       );
       if (existIndex === -1) {
         this.$store.commit("SET_CART_FOODS", [
@@ -68,7 +87,7 @@ export default {
           this.localFood,
         ]);
       }
-
+      this.$emit("dropAct", event.target);
       setTimeout(() => (this.isClicking = false), 300);
     },
     handleDecrease() {
