@@ -34,6 +34,7 @@
               v-for="(food, index) in item.foods"
               :key="index"
               class="food-item border-1px"
+              @click="selectFoodView(food)"
             >
               <div class="icon">
                 <img :src="food.icon" width="57px" height="57px" alt="" />
@@ -66,6 +67,9 @@
       :foods="foods"
       ref="ShopCart"
     ></ShopCart>
+    <transition name="food-fold">
+      <foodView :food="selectFood" ref="ShopFood"></foodView>
+    </transition>
   </div>
 </template>
 
@@ -75,6 +79,7 @@ import BScroll from '@better-scroll/core'
 import axios from "axios";
 import ShopCart from "../shopcart/ShopCart";
 import CartControl from "../cartconcontrol/CartControl";
+import foodView from "../food/FoodView";
 
 export default {
   data() {
@@ -85,6 +90,7 @@ export default {
       listHeight: [],
       scrollY: 0,
       height: 0,
+      selectFood: {},
 
     };
   },
@@ -106,13 +112,13 @@ export default {
   computed: {
 
     ...mapState(['goodsData']),
+
     currentIndex() {
       for (let i = 0; i < this.listHeight.length; i++) {
         let height1 = this.listHeight[i];
         let height2 = this.listHeight[i + 1];
         if (!height2 || (this.scrollY >= height1 && this.scrollY < height2)) {
           return i;
-
         }
       }
       return 0;
@@ -130,22 +136,31 @@ export default {
     }
   },
   methods: {
-
+    selectFoodView(food) {
+      this.selectFood = food
+      this.$refs.ShopFood.show();
+    },
     _initScroll() {
-      this.menunScroll = new BScroll(this.$refs['menu-wrapper'], {});
+      if (this.$refs['menu-wrapper']) {
+        this.menunScroll = new BScroll(this.$refs['menu-wrapper'], {
+          click: true
+        });
+      }
       console.log("111")
-      this.foodsScroll = new BScroll(this.$refs['foods-wrapper'], {
-        probeType: 3,
-        click: true
-      });
+      if (this.$refs['foods-wrapper']) {
+        this.foodsScroll = new BScroll(this.$refs['foods-wrapper'], {
+          probeType: 3,
+          click: true
+        });
+        this.foodsScroll.on('scroll', (pos) => {
+          this.scrollY = Math.abs(Math.round(pos.y))
+        });
+      }
 
-      this.foodsScroll.on('scroll', (pos) => {
-        this.scrollY = Math.abs(Math.round(pos.y))
-      });
     },
     _calculateHeights() {
       // 添加非空判断
-      if (!this.$refs['foodsListItems']) {
+      if (!this.$refs['foodsListItem']) {
         console.log('未获取到 foodsListItems 的 ref');
         return;
       }
@@ -161,6 +176,7 @@ export default {
       if (!event._constructed) {
         return
       }
+
       const foodListItems = this.$refs['foodsListItem'];
       let el = foodListItems[index];
       this.foodsScroll.scrollToElement(el, 300);
@@ -175,7 +191,8 @@ export default {
   },
   components: {
     CartControl,
-    ShopCart
+    ShopCart,
+    foodView
   }
 
 }
