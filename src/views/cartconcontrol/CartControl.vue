@@ -1,22 +1,36 @@
 <template>
   <div class="cartControl">
-    <transition name="fade">
-      <div
-        class="cart-decrease icon-remove_circle_outline"
-        v-show="localFood.count > 0"
-        @click="handleDecrease"
-      ></div>
-    </transition>
-    <div class="cart-count" v-show="localFood.count > 0">
-      {{ localFood.count }}
-    </div>
+    <div class="cartControl-one" v-show="localFood.count > 0">
+      <transition name="fade">
+        <div
+          class="cart-decrease icon-remove_circle_outline"
+          v-show="localFood.count > 0"
+          @click.stop.prevent="handleDecrease"
+        ></div>
+      </transition>
+      <div class="cart-count" v-show="localFood.count > 0">
+        {{ localFood.count }}
+      </div>
 
-    <div class="cart-add icon-add_circle" @click="handleAdd"></div>
+      <div
+        class="cart-add icon-add_circle"
+        @click.stop.prevent="handleAdd"
+      ></div>
+    </div>
+    <div class="cartControl-two">
+      <div
+        class="add-cart"
+        @click.stop.prevent="handleAdd"
+        v-show="localFood.count === 0"
+      >
+        加入购物车
+      </div>
+    </div>
   </div>
 </template>
 <script>
 import { nanoid } from "nanoid";
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   props: {
@@ -54,7 +68,7 @@ export default {
         const newCartFoods = this.$store.state.cartFoods.map((f) =>
           f.id === newLocalFood.id ? newLocalFood : f
         );
-        this.$store.commit("SET_CART_FOODS", newCartFoods);
+        this.SET_CART_FOODS(newCartFoods);
       },
       deep: true,
     },
@@ -71,6 +85,7 @@ export default {
   },
   methods: {
     ...mapState(["cartFoods"]),
+    ...mapMutations(["SET_CART_FOODS"]),
 
     handleAdd(event) {
       if (this.isClicking) return;
@@ -82,10 +97,7 @@ export default {
         (f) => f.id === this.localFood.id
       );
       if (existIndex === -1) {
-        this.$store.commit("SET_CART_FOODS", [
-          ...this.$store.state.cartFoods,
-          this.localFood,
-        ]);
+        this.SET_CART_FOODS([...this.$store.state.cartFoods, this.localFood]);
       }
       this.$emit("dropAct", event.target);
       setTimeout(() => (this.isClicking = false), 300);
@@ -99,8 +111,7 @@ export default {
       }
 
       if (this.localFood.count === 0) {
-        this.$store.commit(
-          "SET_CART_FOODS",
+        this.SET_CART_FOODS(
           this.$store.state.cartFoods.filter((f) => f.id !== this.localFood.id)
         );
       }
@@ -112,48 +123,60 @@ export default {
 </script>
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .cartControl
-  .cart-decrease, .cart-add
-    display inline-block
-    padding 6px
-    line-height 24px
-    font-size 24px
-    color rgb(0, 160, 220)
+  .cartControl-one
+    .cart-decrease, .cart-add
+      display inline-block
+      padding 6px
+      line-height 24px
+      font-size 24px
+      color rgb(0, 160, 220)
 
-  .fade-enter-active,
-  .fade-leave-active
-    transition: transform 0.5s ease, opacity 0.5s ease;
-
-
-  .fade-enter
-    transform: translateX(20px);
-    opacity: 0;
+    .fade-enter-active,
+    .fade-leave-active
+      transition: transform 0.5s ease, opacity 0.5s ease;
 
 
-  .fade-enter-to
-    transform: translateX(0);
-    opacity: 1;
+    .fade-enter
+      transform: translateX(20px);
+      opacity: 0;
 
 
-  .fade-leave
-    transform: translateX(0);
-    opacity: 1;
+    .fade-enter-to
+      transform: translateX(0);
+      opacity: 1;
 
 
-  .fade-leave-to
-    transform: translateX(20px);
-    opacity: 0;
+    .fade-leave
+      transform: translateX(0);
+      opacity: 1;
 
 
-  .cart-count
-    display inline-block
-    vertical-align top
-    width 12px
-    padding-top 6px
-    line-height 24px
-    text-align center
-    font-size 10px
-    color rgb(147, 153, 159)
+    .fade-leave-to
+      transform: translateX(20px);
+      opacity: 0;
 
-  .cart-add
-    display inline-block
+
+    .cart-count
+      display inline-block
+      vertical-align top
+      width 12px
+      padding-top 6px
+      line-height 24px
+      text-align center
+      font-size 10px
+      color rgb(147, 153, 159)
+
+    .cart-add
+      display inline-block
+
+  .cartControl-two
+    .add-cart
+      width 74px
+      height 24px
+      line-height 24px
+      text-align center
+      font-size 10px
+      color #fff
+      background-color rgb(0, 160, 220)
+      border-radius 12px
 </style>

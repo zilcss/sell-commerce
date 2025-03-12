@@ -67,9 +67,7 @@
       :foods="foods"
       ref="ShopCart"
     ></ShopCart>
-    <transition name="food-fold">
-      <foodView :food="selectFood" ref="ShopFood"></foodView>
-    </transition>
+    <foodView :food="selectFood" ref="ShopFood"></foodView>
   </div>
 </template>
 
@@ -91,7 +89,7 @@ export default {
       scrollY: 0,
       height: 0,
       selectFood: {},
-
+      isClicking: false,
     };
   },
   props: {
@@ -137,8 +135,12 @@ export default {
   },
   methods: {
     selectFoodView(food) {
-      this.selectFood = food
+      if (this.isClicking) return;
+      this.isClicking = true;
+      console.log(food, "asss");
+      this.selectFood = food;
       this.$refs.ShopFood.show();
+      setTimeout(() => (this.isClicking = false), 300);
     },
     _initScroll() {
       if (this.$refs['menu-wrapper']) {
@@ -225,7 +227,7 @@ export default {
 
       &.current
         position relative
-        z-index 10
+        z-index 1
         margin-top -1px
         background #fff
         font-weight 700
