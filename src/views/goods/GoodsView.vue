@@ -34,7 +34,7 @@
               v-for="(food, index) in item.foods"
               :key="index"
               class="food-item border-1px"
-              @click="selectFoodView(food)"
+              @click="selectFoodView({ ...food, id: index })"
             >
               <div class="icon">
                 <img :src="food.icon" width="57px" height="57px" alt="" />
@@ -53,7 +53,10 @@
                   >
                 </div>
                 <div class="cartControl-wrapper">
-                  <CartControl :food="food" @dropAct="dropCar"></CartControl>
+                  <CartControl
+                    :food="{ ...food, id: index }"
+                    @dropAct="dropCar"
+                  ></CartControl>
                 </div>
               </div>
             </li>
@@ -61,12 +64,7 @@
         </li>
       </ul>
     </div>
-    <ShopCart
-      :delivery-price="sellerData.deliveryPrice"
-      :min-price="sellerData.minPrice"
-      :foods="foods"
-      ref="ShopCart"
-    ></ShopCart>
+
     <foodView :food="selectFood" ref="ShopFood"></foodView>
   </div>
 </template>
@@ -75,7 +73,6 @@
 import {mapState} from 'vuex'
 import BScroll from '@better-scroll/core'
 import axios from "axios";
-import ShopCart from "../shopcart/ShopCart";
 import CartControl from "../cartconcontrol/CartControl";
 import foodView from "../food/FoodView";
 
@@ -134,10 +131,12 @@ export default {
     }
   },
   methods: {
+    dropCar(target) {
+      this.$emit('dropCar', target)
+    },
     selectFoodView(food) {
       if (this.isClicking) return;
       this.isClicking = true;
-      console.log(food, "asss");
       this.selectFood = food;
       this.$refs.ShopFood.show();
       setTimeout(() => (this.isClicking = false), 300);
@@ -182,18 +181,11 @@ export default {
       const foodListItems = this.$refs['foodsListItem'];
       let el = foodListItems[index];
       this.foodsScroll.scrollToElement(el, 300);
-    },
-    dropCar(target) {
-      if (target) {
-        console.log("123111")
-        this.$refs.ShopCart.drop(target);
-      }
-    },
+    }
 
   },
   components: {
     CartControl,
-    ShopCart,
     foodView
   }
 
@@ -319,6 +311,7 @@ export default {
           color rgb(147, 153, 159)
 
         .desc
+          line-height 12px
           margin-bottom 8px
 
         .extra

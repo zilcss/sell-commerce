@@ -63,6 +63,13 @@ export default {
     },
   },
   watch: {
+    food(newVal) {
+      // 购物车数据优先，若无则用当前food初始化
+      const cartFood = this.$store.state.cartFoods.find(
+        (f) => f.id === newVal.id
+      );
+      this.localFood = cartFood || { ...newVal, count: 0 };
+    },
     localFood: {
       handler(newLocalFood) {
         const newCartFoods = this.$store.state.cartFoods.map((f) =>
@@ -82,12 +89,23 @@ export default {
       },
       immediate: true,
     },
+    created() {
+      // 在组件创建时检查购物车数据
+      const cartFood = this.$store.state.cartFoods.find(
+        (f) => f.id === this.localFood.id
+      );
+      if (cartFood) {
+        // 如果购物车中存在相同id的商品，更新localFood数据
+        this.localFood = { ...cartFood };
+      }
+    },
   },
   methods: {
     ...mapState(["cartFoods"]),
     ...mapMutations(["SET_CART_FOODS"]),
 
     handleAdd(event) {
+      console.log(this.food, "cart");
       if (this.isClicking) return;
       this.isClicking = true;
       this.localFood.count++;

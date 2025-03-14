@@ -17,7 +17,11 @@
     <div class="content">
       <router-view :sellerData="sellerData" />
     </div>
-    <div class="footer"></div>
+    <ShopCart
+      :delivery-price="sellerData.deliveryPrice"
+      :min-price="sellerData.minPrice"
+      ref="ShopCart"
+    ></ShopCart>
   </div>
 </template>
 
@@ -25,7 +29,7 @@
 import GlobalHeader from "../components/header/GlobalHeader";
 import {routes} from "../router/routes";
 import axios from "axios";
-
+import ShopCart from "../views/shopcart/ShopCart";
 
 export default {
   data() {
@@ -60,9 +64,18 @@ export default {
       if (this.$route.path !== path) {
         this.$router.push(path);
       }
-    }
+    },
+    dropCar(target) {
+      if (target) {
+        console.log("123111")
+        this.$refs.ShopCart.drop(target);
+      }
+    },
   },
-  components: {GlobalHeader}
+  components: {
+    GlobalHeader,
+    ShopCart
+  }
 };
 </script>
 

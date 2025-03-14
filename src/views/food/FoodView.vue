@@ -37,13 +37,13 @@
               <!-- 商品详情右边区域（添加按钮区域） -->
               <div class="detail-right">
                 <!-- 这里添加按钮 -->
-                <CartControl :food="food"></CartControl>
+                <CartControl @dropAct2="dropCar" :food="food"></CartControl>
               </div>
             </div>
           </div>
           <SplitView></SplitView>
           <!-- 商品介绍区域 -->
-          <div class="food-desc-view">
+          <div class="food-desc-view" v-show="food.info">
             <!-- 介绍标题 -->
             <div class="desc-title">
               <!-- 这里填写介绍标题 -->
@@ -55,7 +55,7 @@
               <p class="content">{{ food.info }}</p>
             </div>
           </div>
-          <SplitView></SplitView>
+          <SplitView v-show="food.info"></SplitView>
           <!-- 评论相关区域 -->
           <div class="food-comm-view">
             <!-- 用户查看评论的组件区域 -->
@@ -63,6 +63,8 @@
               <!-- 这里假设是一个组件，用于用户选择查看哪些评论 -->
               <h1 class="comm-title">商品评价</h1>
               <RatingSelect
+                @ratingType="ratingType"
+                @contentToggle="contentToggle"
                 :desc="desc"
                 :ratings="food.ratings"
                 :select-type="selectType"
@@ -71,20 +73,31 @@
             </div>
             <!-- 评论列表区域 -->
             <div class="comm-list">
-              <ul v-for="rating in food.ratings" :key="rating.id">
+              <ul>
                 <!-- 使用v-for遍历生成评论列表，这里只是示例结构 -->
-                <li class="comm-item border-1px">
+                <li
+                  class="comm-item border-1px"
+                  v-for="rating in food.ratings"
+                  :key="rating.id"
+                  v-show="needShow(rating.rateType, rating.text)"
+                >
                   <!-- 评论左边区域（时间、icon、评论内容） -->
                   <div class="comm-item-left">
                     <!-- 评论时间 -->
                     <div class="time-view">
-                      <span>2026-07-07 12:34</span>
+                      <span>{{ rating.rateTime | formatDate }}</span>
                     </div>
 
                     <!-- 评论内容 -->
                     <div class="content-view">
                       <!-- 评论icon，假设用i标签 -->
-                      <i class="icon-view icon-thumb_up"></i>
+                      <i
+                        class="icon-view"
+                        :class="{
+                          'icon-thumb_up': rating.rateType === 0,
+                          'icon-thumb_down': rating.rateType === 1,
+                        }"
+                      ></i>
                       <p class="content-text">{{ rating.text }}</p>
                     </div>
                   </div>
@@ -102,6 +115,12 @@
                 </li>
               </ul>
             </div>
+            <div
+              class="comm-no-list"
+              v-show="!food.ratings || !food.ratings.length"
+            >
+              暂无评论
+            </div>
           </div>
         </div>
       </div>
@@ -115,6 +134,7 @@ import SplitView from "@/views/split/SplitView";
 import BScroll from '@better-scroll/core'
 import CartControl from "@/views/cartconcontrol/CartControl";
 import {mapState} from "vuex";
+import {formatDate} from "@/js/data";
 
 const POSITIVE = 0
 const NEGATIVE = 1
@@ -145,7 +165,7 @@ export default {
   methods: {
     show() {
       this.showFlag = true
-
+      console.log(this.food, "foodview")
       setTimeout(() => {
         if (!this.scroll) {
           this.scroll = new BScroll(this.$refs['food-wrapper'], {
@@ -156,12 +176,51 @@ export default {
         }
       }, 300);
 
-
     },
     hide() {
       this.showFlag = false
     },
-  },
+    needShow(rateType, text) {
+      console.log(this.onlyContent, this.selectType, rateType, text, "456")
+      if (this.onlyContent && !text) {
+        return false
+      }
+      if (this.selectType === ALL) {
+        return true
+      } else {
+        return rateType === this.selectType
+      }
+
+    }
+    ,
+    dropCar(event) {
+      console.log("555555555")
+      this.$emit("dropAct", event.target)
+    }
+    ,
+    ratingType(type) {
+      this.selectType = type
+      setTimeout(() => {
+        this.scroll.refresh();
+      }, 300);
+    }
+    ,
+    contentToggle(onlyContent) {
+      this.onlyContent = onlyContent
+      setTimeout(() => {
+        this.scroll.refresh();
+      }, 100);
+
+    }
+  }
+  , filters: {
+    formatDate(time) {
+      let date = new Date(time);
+      return formatDate(date, 'yyyy-MM-dd hh:mm');
+
+    }
+  }
+
 
 }
 </script>
@@ -327,6 +386,13 @@ export default {
           border-radius 50%
           overflow hidden
 
+
+  .comm-no-list
+    padding 0 18px
+    font-size 12px
+    color rgb(147, 153, 159)
+    line-height 32px
+    text-align center
 
 .food-fold-enter-active,
 .food-fold-leave-active

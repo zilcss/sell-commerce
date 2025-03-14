@@ -64,7 +64,9 @@
                   ¥{{ food.price * food.count }}
                 </div>
                 <div class="cart-context">{{ food.count }}个</div>
-                <div class="cart-button" @click="popFood(food)">删除</div>
+                <div class="cart-button">
+                  <CartControl :food="food"></CartControl>
+                </div>
               </li>
             </ul>
           </div>
@@ -181,15 +183,6 @@ export default {
       this.$store.commit('SET_CART_FOODS', [])
       this.fold = false
     },
-    popFood(food) {
-      this.$store.commit(
-          "SET_CART_FOODS",
-          this.$store.state.cartFoods.filter((f) => f.id !== food.id)
-      );
-      if (this.totalCount === 0) {
-        this.fold = false
-      }
-    },
     payPrice() {
       if (this.totalPrice < this.minPrice) return
       alert("支付" + this.totalPrice + "元")
@@ -268,7 +261,7 @@ export default {
       }
     },
   },
-  components: {}
+  components: {CartControl}
 
 }
 </script>
@@ -453,6 +446,7 @@ export default {
 
         .added-products-right
           position absolute
+          vertical-align top
           right 85px
           bottom 0
           font-size 18px
@@ -468,10 +462,8 @@ export default {
 
         .cart-button
           position absolute
-          right 10px
-          bottom 0
-          color rgb(240, 20, 20)
-          font-size 14px
+          right -3px
+          bottom -5px
 
 
   .fold-enter-active,

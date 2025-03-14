@@ -41,10 +41,7 @@ const store = new Vuex.Store<StoreState>({
     // 添加商品到购物车
     // 直接替换整个cartFoods数组
     SET_CART_FOODS(state, payload: Food[]) {
-      console.log("运行几次");
-      console.log(state.cartFoods, "123333");
       state.cartFoods = payload;
-      console.log(state.cartFoods, "1233");
     },
   },
   actions: {
