@@ -28,7 +28,7 @@
           class="food-list"
           ref="foodsListItem"
         >
-          <h1 class="title">{{ item.name }}</h1>
+          <h1 class="food-title">{{ item.name }}</h1>
           <ul>
             <li
               v-for="(food, index) in item.foods"
@@ -132,7 +132,7 @@ export default {
   },
   methods: {
     dropCar(target) {
-      this.$emit('dropCar', target)
+      this.$emit('dropAct', target)
     },
     selectFoodView(food) {
       if (this.isClicking) return;
@@ -270,7 +270,7 @@ export default {
   .foods-wrapper
     flex 1
 
-    .title
+    .food-title
       padding-left 14px
       height 26px
       font-size 12px

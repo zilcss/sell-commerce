@@ -82,7 +82,6 @@ export default {
   computed: {
     positiveSize() {
       return this.ratings.filter((rating) => {
-        console.log(rating, "456")
         return rating.rateType === POSITIVE;
       }).length;
 

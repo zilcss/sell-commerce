@@ -3,7 +3,7 @@ export function formatDate(date, fmt) {
   if (/(y+)/.test(fmt)) {
     fmt = fmt.replace(
       RegExp.$1,
-      (date.getFullYear() + "").substr(4 - RegExp.$1.length)
+      (date.getFullYear() + "").slice(4 - RegExp.$1.length, 4)
     );
   }
   let o = {

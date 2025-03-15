@@ -74,7 +74,7 @@
               </div>
             </div>
             <div class="list-rating-right">
-              <div class="rating-time">{{ rating.rateTime }}</div>
+              <div class="rating-time">{{ rating.rateTime | formatDate }}</div>
             </div>
             <div class="rating-content-warp">
               <div class="rating-content">{{ rating.text }}</div>
@@ -109,6 +109,7 @@ import axios from "axios";
 import StarView from "@/components/star/StarView";
 import SplitView from "@/views/split/SplitView";
 import RatingSelect from "@/views/ratingselect/RatingSelect";
+import { formatDate } from "@/js/data";
 
 const POSITIVE = 0;
 const NEGATIVE = 1;
@@ -167,7 +168,6 @@ export default {
       }, 100);
     },
     needShow(rateType, text) {
-      console.log(this.onlyContent, this.selectType, rateType, text, "456");
       if (this.onlyContent && !text) {
         return false;
       }
@@ -178,9 +178,14 @@ export default {
       }
     },
   },
+  filters: {
+    formatDate(time) {
+      let date = new Date(time);
+      return formatDate(date, "yyyy-MM-dd hh:mm");
+    },
+  },
 };
 </script>
-
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 @import "../../common/stylus/index.styl"
 .comment-view

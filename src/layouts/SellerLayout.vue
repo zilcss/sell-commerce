@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="content">
-      <router-view :sellerData="sellerData" />
+      <router-view :sellerData="sellerData" @dropAct="dropCar" />
     </div>
     <ShopCart
       :delivery-price="sellerData.deliveryPrice"
@@ -30,36 +30,31 @@ import GlobalHeader from "../components/header/GlobalHeader";
 import {routes} from "../router/routes";
 import axios from "axios";
 import ShopCart from "../views/shopcart/ShopCart";
+import {mapState} from "vuex";
 
 export default {
   data() {
     return {
       visibleRouter: [],
-      sellerData: {},
       isLoading: false
     };
   },
   created() {
-    this.fetchSellerData();
     this.visibleRouter = routes.map(route => ({
       path: route.path,
       name: route.name
     }));
   },
+  computed: {
+    ...mapState({
+      sellerData: 'sellerData'
+    }),
+  },
+  mounted() {
+    console.log(this.sellerData, "7789");
+  },
   methods: {
-    async fetchSellerData() {
-      this.isLoading = true;
-      try {
-        const response = await axios.get("http://localhost:3000/seller");
 
-        this.sellerData = response.data;
-        console.log(this.sellerData);
-      } catch (error) {
-        console.error("获取数据失败", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
     goToRoute(path) {
       if (this.$route.path !== path) {
         this.$router.push(path);
