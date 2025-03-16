@@ -7,7 +7,7 @@ import "../static/css/reset.css";
 Vue.config.productionTip = false;
 
 // 先触发action获取数据
-store.dispatch("fetchGoodsData");
+store.dispatch("goods/fetchGoodsData");
 
 new Vue({
   router,

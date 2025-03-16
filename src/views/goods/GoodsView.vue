@@ -98,7 +98,7 @@ export default {
   created() {
     this.classMap = ["decrease", "discount", "special", "invoice", "guarantee"];
     this._initScroll();
-    this.$store.dispatch('fetchGoodsData')
+    this.$store.dispatch("goods/fetchGoodsData")
   },
   mounted() {
     this.height = 0;
@@ -106,7 +106,9 @@ export default {
   },
   computed: {
 
-    ...mapState(['goodsData']),
+    ...mapState({
+      goodsData: state => state.goods.goodsData // goods 是模块名，对应 store 中注册的模块名
+    }),
 
     currentIndex() {
       for (let i = 0; i < this.listHeight.length; i++) {

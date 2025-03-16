@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
-import { urlParse } from "../js/util";
+import { Commit } from "vuex";
 
 Vue.use(Vuex);
 
@@ -38,64 +38,72 @@ interface SellerResponse {
   avatar?: string;
 }
 
-// 定义 Store 的 State 类型
-interface StoreState {
+// 定义商品模块的 State 类型
+interface GoodsState {
   goodsData: Food[];
   cartFoods: Food[];
   sellerData: SellerResponse;
   error: null | string;
 }
 
-const store = new Vuex.Store<StoreState>({
+// 定义商品模块的上下文类型（用于 actions）
+interface GoodsModuleContext {
+  state: GoodsState;
+  commit: Commit;
+}
+
+// 定义商品模块
+const goodsModule = {
+  namespaced: true, // 开启命名空间
   state: {
     goodsData: [],
     cartFoods: [],
     sellerData: {} as SellerResponse,
     error: null,
-  },
+  } as GoodsState,
   mutations: {
     // 设置商品数据
-    SET_GOODS_DATA(state, payload: Food[]) {
+    SET_GOODS_DATA(state: GoodsState, payload: Food[]) {
       state.goodsData = payload;
     },
     // 设置商家数据
-    SET_SELLER_DATA(state, payload: SellerResponse) {
+    SET_SELLER_DATA(state: GoodsState, payload: SellerResponse) {
       state.sellerData = payload;
     },
     // 添加商品到购物车
-    SET_CART_FOODS(state, payload: Food[]) {
+    SET_CART_FOODS(state: GoodsState, payload: Food[]) {
       state.cartFoods = payload;
     },
     // 设置错误信息
-    SET_ERROR(state, payload: null | string) {
+    SET_ERROR(state: GoodsState, payload: null | string) {
       state.error = payload;
     },
   },
   actions: {
     // 单独获取商家数据
-    async fetchSellerData({ commit }, id: string) {
-      commit("SET_ERROR", null);
+    async fetchSellerData(context: GoodsModuleContext, id: string) {
+      context.commit("SET_ERROR", null);
       try {
         const response = await axios.get(
           `http://localhost:3000/seller?id=${id}`
         );
-        commit("SET_SELLER_DATA", response.data);
+        context.commit("SET_SELLER_DATA", response.data);
         return true;
       } catch (error) {
-        commit("SET_ERROR", "商家数据获取失败");
+        context.commit("SET_ERROR", "商家数据获取失败");
         return false;
       }
     },
     // 单独获取商品数据
-    async fetchGoodsData({ commit }) {
+    async fetchGoodsData(context: GoodsModuleContext) {
       try {
         const response = await axios.get("http://localhost:3000/goods");
-        commit("SET_GOODS_DATA", response.data);
+        context.commit("SET_GOODS_DATA", response.data);
       } catch (error) {
         console.error("商品数据获取失败", error);
       }
     },
   },
-});
+};
 
-export default store;
+export default goodsModule;

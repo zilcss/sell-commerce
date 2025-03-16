@@ -88,7 +88,6 @@ export default {
 
   }, methods: {
     showDetail() {
-      console.log("showDetail", this.sellerData.supports[0]);
       this.showView = true;
     },
     hideDetail() {

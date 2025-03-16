@@ -30,7 +30,7 @@
 </template>
 <script>
 import { nanoid } from "nanoid";
-import { mapState, mapMutations } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   props: {
@@ -51,31 +51,31 @@ export default {
     };
   },
   computed: {
+    ...mapState({
+      cartFoods: (state) => state.goods.cartFoods, // 正确映射模块内状态
+    }),
     /**
      * 监听购物车数据变化
      * @returns {number} 当前商品在购物车中的数量
      */
     cartFoodCount() {
-      const cartFood = this.$store.state.cartFoods.find(
-        (f) => f.id === this.localFood.id
-      );
+      const cartFood = this.cartFoods.find((f) => f.id === this.localFood.id);
       return cartFood ? cartFood.count : 0;
     },
   },
   watch: {
     food(newVal) {
       // 购物车数据优先，若无则用当前food初始化
-      const cartFood = this.$store.state.cartFoods.find(
-        (f) => f.id === newVal.id
-      );
+      const cartFood = this.cartFoods.find((f) => f.id === newVal.id);
       this.localFood = cartFood || { ...newVal, count: 0 };
     },
     localFood: {
       handler(newLocalFood) {
-        const newCartFoods = this.$store.state.cartFoods.map((f) =>
+        const newCartFoods = this.cartFoods.map((f) =>
           f.id === newLocalFood.id ? newLocalFood : f
         );
-        this.SET_CART_FOODS(newCartFoods);
+        // 修正commit调用，添加模块命名空间
+        this.$store.commit("goods/SET_CART_FOODS", newCartFoods);
       },
       deep: true,
     },
@@ -89,33 +89,30 @@ export default {
       },
       immediate: true,
     },
-    created() {
-      // 在组件创建时检查购物车数据
-      const cartFood = this.$store.state.cartFoods.find(
-        (f) => f.id === this.localFood.id
-      );
-      if (cartFood) {
-        // 如果购物车中存在相同id的商品，更新localFood数据
-        this.localFood = { ...cartFood };
-      }
-    },
+  },
+  created() {
+    // 在组件创建时检查购物车数据
+    const cartFood = this.cartFoods.find((f) => f.id === this.localFood.id);
+    if (cartFood) {
+      // 如果购物车中存在相同id的商品，更新localFood数据
+      this.localFood = { ...cartFood };
+    }
   },
   methods: {
-    ...mapState(["cartFoods"]),
-    ...mapMutations(["SET_CART_FOODS"]),
-
     handleAdd(event) {
-      console.log(this.food, "cart");
       if (this.isClicking) return;
       this.isClicking = true;
       this.localFood.count++;
 
       // 检查是否已存在于购物车
-      const existIndex = this.$store.state.cartFoods.findIndex(
+      const existIndex = this.cartFoods.findIndex(
         (f) => f.id === this.localFood.id
       );
       if (existIndex === -1) {
-        this.SET_CART_FOODS([...this.$store.state.cartFoods, this.localFood]);
+        this.$store.commit("goods/SET_CART_FOODS", [
+          ...this.cartFoods,
+          this.localFood,
+        ]);
       }
       this.$emit("dropAct", event.target);
       setTimeout(() => (this.isClicking = false), 300);
@@ -129,8 +126,9 @@ export default {
       }
 
       if (this.localFood.count === 0) {
-        this.SET_CART_FOODS(
-          this.$store.state.cartFoods.filter((f) => f.id !== this.localFood.id)
+        this.$store.commit(
+          "goods/SET_CART_FOODS",
+          this.cartFoods.filter((f) => f.id !== this.localFood.id)
         );
       }
 
@@ -139,6 +137,7 @@ export default {
   },
 };
 </script>
+
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .cartControl
   .cartControl-one

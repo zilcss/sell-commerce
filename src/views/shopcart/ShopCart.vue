@@ -131,7 +131,7 @@ export default {
 
   ,
   computed: {
-    ...mapState(['cartFoods']),
+    ...mapState({cartFoods: (state) => state.goods.cartFoods} ),
     /**
      * 控制购物车展示逻辑
      * @returns {boolean} 是否显示购物车

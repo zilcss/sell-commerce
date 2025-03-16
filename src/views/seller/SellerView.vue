@@ -115,7 +115,8 @@ export default {
   },
   computed: {
     ...mapState({
-      sellerData: 'sellerData'
+      sellerData: (state) => state.goods.sellerData // `goods` 为模块名，需与 store 中注册的模块名一致
+
     }),
     favoriteText() {
       return this.favorite ? '已收藏' : '收藏'
@@ -151,7 +152,7 @@ export default {
     }, 300);
   },
   created() {
-    this.$store.dispatch('fetchSellerData');
+    this.$store.dispatch('goods/fetchSellerData');
   }
 
 }

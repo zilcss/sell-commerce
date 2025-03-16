@@ -160,12 +160,12 @@ export default {
     }
   },
   computed: {
-    ...mapState(['cartFoods'])
+
+    ...mapState({cartFoods: (state) => state.goods.cartFoods})
   },
   methods: {
     show() {
       this.showFlag = true
-      console.log(this.food, "foodview")
       setTimeout(() => {
         if (!this.scroll) {
           this.scroll = new BScroll(this.$refs['food-wrapper'], {
@@ -181,7 +181,6 @@ export default {
       this.showFlag = false
     },
     needShow(rateType, text) {
-      console.log(this.onlyContent, this.selectType, rateType, text, "456")
       if (this.onlyContent && !text) {
         return false
       }

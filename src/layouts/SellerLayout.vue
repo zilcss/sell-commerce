@@ -47,11 +47,8 @@ export default {
   },
   computed: {
     ...mapState({
-      sellerData: 'sellerData'
+      sellerData: (state) => state.goods.sellerData // `goods` 为模块名，需与 store 中注册的模块名一致
     }),
-  },
-  mounted() {
-    console.log(this.sellerData, "7789");
   },
   methods: {
 
@@ -62,7 +59,6 @@ export default {
     },
     dropCar(target) {
       if (target) {
-        console.log("123111")
         this.$refs.ShopCart.drop(target);
       }
     },
