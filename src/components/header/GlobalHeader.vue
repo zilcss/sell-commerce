@@ -13,10 +13,7 @@
           {{ sellerData.description }}/{{ sellerData.deliveryTime }}分钟送达
         </div>
         <div class="support" v-if="sellerData.supports">
-          <span
-            class="icon"
-            :class="classMap[sellerData.supports[0].type]"
-          ></span>
+          <i class="icon" :class="classMap[sellerData.supports[0].type]"></i>
           <span class="text">{{ sellerData.supports[0].description }}</span>
         </div>
       </div>
@@ -45,19 +42,11 @@
                 <div class="text">优惠信息</div>
                 <div class="line"></div>
               </div>
-              <ul v-if="sellerData.supports" class="supports">
-                <li
-                  v-for="(item, index) in sellerData.supports"
-                  :key="index"
-                  class="support-item"
-                >
-                  <span
-                    class="icon"
-                    :class="classMap[sellerData.supports[index].type]"
-                  ></span>
-                  <span class="text">{{ item.description }}</span>
-                </li>
-              </ul>
+              <supports-view
+                :is-show="classMap[0]"
+                :supports="sellerData.supports"
+                :class-map="classMap"
+              ></supports-view>
               <div class="title">
                 <div class="line"></div>
                 <div class="text">商家公告</div>
@@ -82,12 +71,14 @@
 
 <script type="text/ecmascript-6">
 import star from "../star/StarView.vue";
+import supportsView from "../../views/supports/SupportsView.vue";
 
 export default {
   name: "GlobalHeader",
   data() {
     return {
-      showView: false
+      showView: false,
+      classMap: ['decrease', 'discount', 'special', 'invoice', 'guarantee'],
     };
   },
   props: {
@@ -97,6 +88,7 @@ export default {
 
   }, methods: {
     showDetail() {
+      console.log("showDetail", this.sellerData.supports[0]);
       this.showView = true;
     },
     hideDetail() {
@@ -105,12 +97,9 @@ export default {
 
 
   },
-  created() {
-    this.classMap = ["decrease", "discount", "special", "invoice", "guarantee"];
-
-  },
   components: {
-    star
+    star,
+    supportsView
   }
 
 
@@ -326,56 +315,6 @@ export default {
         font-weight 700
         font-size 14px
 
-
-    .supports
-      width 80%
-      margin 0 auto
-
-      .support-item
-        padding 0 12px
-        margin-bottom 12px
-        text-align left
-
-        &:last-child
-          margin-bottom 0
-
-        .icon
-          display inline-block
-          width 16px
-          height 16px
-          vertical-align top
-          margin-right 6px
-          background-size 16px 16px
-          background-repeat no-repeat
-
-          &.decrease
-            background-image url('decrease_2@2x.png')
-            @media (-webkit-min-device-pixel-ratio: 3), (min-device-pixel-ratio: 3)
-              background-image url('decrease_2@3x.png')
-
-          &.discount
-            background-image url('discount_2@2x.png')
-            @media (-webkit-min-device-pixel-ratio: 3), (min-device-pixel-ratio: 3)
-              background-image url('discount_2@3x.png')
-
-          &.guarantee
-            background-image url('guarantee_2@2x.png')
-            @media (-webkit-min-device-pixel-ratio: 3), (min-device-pixel-ratio: 3)
-              background-image url('guarantee_2@3x.png')
-
-          &.invoice
-            background-image url('invoice_2@2x.png')
-            @media (-webkit-min-device-pixel-ratio: 3), (min-device-pixel-ratio: 3)
-              background-image url('invoice_2@3x.png')
-
-          &.special
-            background-image url('special_2@2x.png')
-            @media (-webkit-min-device-pixel-ratio: 3), (min-device-pixel-ratio: 3)
-              background-image url('special_2@3x.png')
-
-        .text
-          line-height 16px
-          font-size 12px
 
 .bulletin
   width 80%

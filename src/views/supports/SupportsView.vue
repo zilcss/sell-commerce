@@ -1,16 +1,15 @@
 <template>
   <div class="supports-view">
-    <ul v-if="sellerData.supports" class="supports" :style="ulSupports">
+    <ul v-if="supports" class="supports" :style="ulSupports">
       <li
-        v-for="(item, index) in sellerData.supports"
+        v-for="(item, index) in supports"
         :key="index"
         class="support-item"
         :style="itemStyle"
+        v-show="isMatch(item, index)"
       >
         <i class="support-icon" :class="classMap[item.type]"></i>
-        <span class="text" :style="textStyle"
-          >{{ item.description }}{{ item.type }}</span
-        >
+        <span class="text" :style="textStyle">{{ item.description }}</span>
       </li>
     </ul>
   </div>
@@ -22,10 +21,10 @@ export default {
   },
 
   props: {
-    sellerData: {
-      type: Object,
+    supports: {
+      type: Array || Object,
       default() {
-        return {}
+        return []
       }
     },
     classMap: {
@@ -52,6 +51,34 @@ export default {
         return {}
       }
     },
+    isShow: {
+      type: [Array, Object, String, Number],
+      default() {
+        return null
+      }
+
+    }
+  },
+  methods: {
+    isMatch(ccItem, index) {
+      // 1. 当 mm 未传递时，显示所有项
+      if (this.isShow === null) return true;
+
+      // 2. 当 mm 是数组时，检查是否包含当前 ccItem 或索引
+      if (Array.isArray(this.isShow)) {
+        console.log("array")
+        return this.isShow.includes(ccItem) || this.i.includes(index);
+      }
+
+      // 3. 当 mm 是对象时，检查是否与 ccItem 深度相等
+      if (typeof this.isShow === 'object') {
+        console.log("object")
+        return JSON.stringify(ccItem) === JSON.stringify(this.isShow);
+      }
+      console.log("基本", ccItem, this.isShow)
+      // 4. 基本类型直接比较
+      return ccItem === this.isShow;
+    }
   },
   created() {
     console.log(this.sellerData)

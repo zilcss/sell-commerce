@@ -7,7 +7,7 @@
 import SellerLayout from "@/layouts/SellerLayout";
 
 export default {
-  components: {SellerLayout}
+  components: {SellerLayout},
 };
 </script>
 <style>

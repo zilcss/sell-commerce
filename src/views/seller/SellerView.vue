@@ -12,11 +12,11 @@
             <div class="count rating">({{ sellerData.ratingCount }})</div>
             <div class="count sell">月售{{ sellerData.sellCount }}单</div>
           </div>
-          <div class="right-part">
-            <div class="icon-favorite">
+          <div class="right-part" @click="_favoriteToggle">
+            <div class="icon-favorite" :class="{ active: favorite }">
               <i class="icon"></i>
             </div>
-            <span class="favorite-text">已收藏</span>
+            <span class="favorite-text">{{ favoriteText }}</span>
           </div>
         </div>
         <div class="bottom-part-top">
@@ -44,7 +44,7 @@
         <div class="lower-part">
           <supports-view
             :ul-supports="ulSupports"
-            :sellerData="sellerData"
+            :supports="sellerData.supports"
             :text-style="textStyle"
             :class-map="classMap"
             :item-style="itemStyle"
@@ -109,13 +109,18 @@ export default {
         margin: '0 12px',
         padding: '16px 0',
         borderTop: '1px solid rgba(7,17,27,0.1)'
-      }
+      },
+      favorite: false,
     }
   },
   computed: {
     ...mapState({
       sellerData: 'sellerData'
-    })
+    }),
+    favoriteText() {
+      return this.favorite ? '已收藏' : '收藏'
+
+    }
   },
   methods: {
     _initScroll() {
@@ -134,13 +139,21 @@ export default {
         });
       }
     },
+    _favoriteToggle() {
+      this.favorite = !this.favorite;
+      //saveToLocal(this.sellerData.id, 'favorite', this.favorite);
+    }
   }
   ,
   mounted() {
     setTimeout(() => {
       this._initScroll();
     }, 300);
+  },
+  created() {
+    this.$store.dispatch('fetchSellerData');
   }
+
 }
 </script>
 
@@ -191,6 +204,8 @@ export default {
       .right-part
         position absolute
         display inline-block
+        width 40px
+        text-align center
         right 18px
         top 18px
 
