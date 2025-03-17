@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="content">
-      <router-view :sellerData="sellerData" @dropAct="dropCar" />
+      <router-view :sellerData="sellerData" keep-alive @dropAct="dropCar" />
     </div>
     <ShopCart
       :delivery-price="sellerData.deliveryPrice"
@@ -44,6 +44,7 @@ export default {
       path: route.path,
       name: route.name
     }));
+    this.$store.dispatch('goods/fetchSellerData');
   },
   computed: {
     ...mapState({

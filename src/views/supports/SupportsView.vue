@@ -75,7 +75,6 @@ export default {
         console.log("object")
         return JSON.stringify(ccItem) === JSON.stringify(this.isShow);
       }
-      console.log("基本", ccItem, this.isShow)
       // 4. 基本类型直接比较
       return ccItem === this.isShow;
     }

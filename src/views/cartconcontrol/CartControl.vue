@@ -48,6 +48,7 @@ export default {
         count: this.count || 0,
       },
       isClicking: false,
+      isInitialized: false,
     };
   },
   computed: {
@@ -70,12 +71,16 @@ export default {
       this.localFood = cartFood || { ...newVal, count: 0 };
     },
     localFood: {
-      handler(newLocalFood) {
-        const newCartFoods = this.cartFoods.map((f) =>
-          f.id === newLocalFood.id ? newLocalFood : f
-        );
-        // 修正commit调用，添加模块命名空间
-        this.$store.commit("goods/SET_CART_FOODS", newCartFoods);
+      handler(newLocalFood, oldLocalFood) {
+        // 简单比较两个对象是否有差异，这里只是示例，复杂对象比较可使用更专业方法
+        const isEqual =
+          JSON.stringify(newLocalFood) === JSON.stringify(oldLocalFood);
+        if (!isEqual) {
+          const newCartFoods = this.cartFoods.map((f) =>
+            f.id === newLocalFood.id ? newLocalFood : f
+          );
+          this.$store.commit("goods/SET_CART_FOODS", newCartFoods);
+        }
       },
       deep: true,
     },
@@ -91,11 +96,12 @@ export default {
     },
   },
   created() {
-    // 在组件创建时检查购物车数据
-    const cartFood = this.cartFoods.find((f) => f.id === this.localFood.id);
-    if (cartFood) {
-      // 如果购物车中存在相同id的商品，更新localFood数据
-      this.localFood = { ...cartFood };
+    if (!this.isInitialized) {
+      const cartFood = this.cartFoods.find((f) => f.id === this.localFood.id);
+      if (cartFood) {
+        this.localFood = { ...cartFood };
+      }
+      this.isInitialized = true;
     }
   },
   methods: {

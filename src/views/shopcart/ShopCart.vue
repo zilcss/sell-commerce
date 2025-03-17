@@ -131,7 +131,7 @@ export default {
 
   ,
   computed: {
-    ...mapState({cartFoods: (state) => state.goods.cartFoods} ),
+    ...mapState({cartFoods: (state) => state.goods.cartFoods}),
     /**
      * 控制购物车展示逻辑
      * @returns {boolean} 是否显示购物车
@@ -168,7 +168,6 @@ export default {
     },
     payClass() {
       if (this.totalPrice >= this.minPrice) {
-        console.log("222")
         return "enough"
       }
       return "not-enough"

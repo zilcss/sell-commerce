@@ -23,8 +23,8 @@
     <div class="foods-wrapper" ref="foods-wrapper">
       <ul>
         <li
-          v-for="(item, index) in goodsData"
-          :key="index"
+          v-for="(item, goodIndex) in goodsData"
+          :key="goodIndex"
           class="food-list"
           ref="foodsListItem"
         >
@@ -34,13 +34,15 @@
               v-for="(food, index) in item.foods"
               :key="index"
               class="food-item border-1px"
-              @click="selectFoodView({ ...food, id: index })"
+              @click="selectFoodView({ ...food, id: `${goodIndex}${index}` })"
             >
               <div class="icon">
                 <img :src="food.icon" width="57px" height="57px" alt="" />
               </div>
               <div class="content">
-                <h2 class="name">{{ food.name }}</h2>
+                <h2 class="name">
+                  {{ food.name }}
+                </h2>
                 <p class="desc">{{ food.description }}</p>
                 <div class="extra">
                   <span>月售{{ food.sellCount }}份</span>
@@ -54,7 +56,7 @@
                 </div>
                 <div class="cartControl-wrapper">
                   <CartControl
-                    :food="{ ...food, id: index }"
+                    :food="{ ...food, id: `${goodIndex}${index}` }"
                     @dropAct="dropCar"
                   ></CartControl>
                 </div>
@@ -149,7 +151,6 @@ export default {
           click: true
         });
       }
-      console.log("111")
       if (this.$refs['foods-wrapper']) {
         this.foodsScroll = new BScroll(this.$refs['foods-wrapper'], {
           probeType: 3,
@@ -173,7 +174,6 @@ export default {
         this.height += item.clientHeight;
         this.listHeight.push(this.height);
       });
-      console.log("121")
     }
     , isActive(index, event) {
       if (!event._constructed) {

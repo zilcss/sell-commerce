@@ -105,5 +105,4 @@ const goodsModule = {
     },
   },
 };
-
 export default goodsModule;
